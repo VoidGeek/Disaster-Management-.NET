@@ -1,0 +1,46 @@
+<script>
+    window.onload = function () {
+        // Define the boundaries for London
+        var londonBounds = [
+            [51.28, -0.489], // Southwest corner
+            [51.686, 0.236]  // Northeast corner
+        ];
+
+        // Initialize the map centered in London
+        var map = L.map('map').setView([51.505, -0.09], 12); // Center on London
+
+        // Load map tiles from OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            minZoom: 10, // Prevent zooming too far out of London
+            maxBounds: londonBounds // Restrict map bounds to London
+        }).addTo(map);
+
+        // Restrict panning outside the London bounds
+        map.setMaxBounds(londonBounds);
+
+        map.on('drag', function () {
+            map.panInsideBounds(londonBounds, { animate: true });
+        });
+
+        var marker;
+
+        // On map click, add marker and set latitude/longitude values
+        map.on('click', function (e) {
+            var lat = e.latlng.lat;
+            var lon = e.latlng.lng;
+
+            // Set the lat/lon values to the input fields
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lon;
+
+            // Remove the previous marker if it exists
+            if (marker) {
+                map.removeLayer(marker);
+            }
+
+            // Add a marker at the clicked location
+            marker = L.marker([lat, lon]).addTo(map);
+        });
+    };
+</script>

@@ -1,0 +1,53 @@
+@model Incident
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report New Incident</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+</head>
+<body>
+
+    <h2>Report New Incident</h2>
+
+    <form asp-action="Create" method="post">
+        <div class="form-group">
+            <label>Title</label>
+            <input type="text" class="form-control" asp-for="Title" />
+        </div>
+
+        <div class="form-group">
+            <label>Description</label>
+            <textarea class="form-control" asp-for="Description"></textarea>
+        </div>
+
+        <!-- Map Container -->
+        <div id="map" style="height: 400px;"></div>
+
+        <div class="form-group">
+            <label>Latitude</label>
+            <input type="text" class="form-control" id="latitude" asp-for="Latitude" readonly />
+        </div>
+
+        <div class="form-group">
+            <label>Longitude</label>
+            <input type="text" class="form-control" id="longitude" asp-for="Longitude" readonly />
+        </div>
+
+        <div class="form-group">
+            <input type="submit" value="Report" class="btn btn-primary" />
+        </div>
+    </form>
+
+    <!-- Include the script from the partial view -->
+    @await Html.PartialAsync("_MapScript")
+    
+</body>
+</html>

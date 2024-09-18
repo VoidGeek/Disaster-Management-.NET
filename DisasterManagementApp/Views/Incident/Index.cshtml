@@ -1,0 +1,26 @@
+@model IEnumerable<Incident>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Date Reported</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Title</td>
+                <td>@item.Description</td>
+                <td>@item.DateReported</td>
+                <td>
+                    <a asp-action="Edit" asp-route-incidentId="@item.IncidentId" class="btn btn-primary">Edit</a> |
+                    <a asp-action="Delete" asp-route-incidentId="@item.IncidentId" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
