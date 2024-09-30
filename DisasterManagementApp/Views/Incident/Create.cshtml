@@ -17,7 +17,7 @@
 
     <h2>Report New Incident</h2>
 
-    <form asp-action="Create" method="post">
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
         <div class="form-group">
             <label>Title</label>
             <input type="text" class="form-control" asp-for="Title" />
@@ -41,13 +41,19 @@
             <input type="text" class="form-control" id="longitude" asp-for="Longitude" readonly />
         </div>
 
+        <!-- File Upload for Image or Video -->
+        <div class="form-group">
+            <label for="fileUpload">Upload Image or Video</label>
+            <input type="file" class="form-control" id="fileUpload" name="fileUpload" accept="image/*,video/*" />
+        </div>
+
         <div class="form-group">
             <input type="submit" value="Report" class="btn btn-primary" />
         </div>
     </form>
 
-    <!-- Include the script from the partial view -->
-    @await Html.PartialAsync("_MapScript")
-    
+    <!-- Include the script from the partial view (_MapScript.cshtml) -->
+    <partial name="_MapScript" />
+
 </body>
 </html>

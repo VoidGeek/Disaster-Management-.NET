@@ -4,24 +4,46 @@ using Microsoft.AspNetCore.Mvc;
 // using System.Linq;
 using DisasterManagementApp.Data;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using Firebase.Auth;
+using Firebase.Storage;
+using Microsoft.Extensions.Configuration;
+
+
 
 [Authorize] // <-- This restricts all actions in this controller to logged-in users
 public class IncidentController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private readonly IConfiguration _configuration;
 
-    public IncidentController(ApplicationDbContext context)
+    public IncidentController(ApplicationDbContext context, IConfiguration configuration)
     {
         _context = context;
+        _configuration = configuration;
     }
 
     // GET: Incidents
     public IActionResult Index()
     {
-        // Retrieve incidents without converting the DateTime values
-        var incidents = _context.Incidents.ToList();
-        return View(incidents);
+        // Get the User ID from claims
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        // Ensure UserId is set and can be parsed as an int
+        if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
+        {
+            // Retrieve only incidents for the logged-in user
+            var incidents = _context.Incidents
+                .Where(i => i.UserId == userId)
+                .ToList();
+
+            return View(incidents);
+        }
+
+        // If UserId is not found or invalid, return an empty list or handle accordingly
+        return View(new List<Incident>());
     }
+
 
     // GET: Incident/Create
     public IActionResult Create()
@@ -31,28 +53,82 @@ public class IncidentController : Controller
 
     // POST: Incident/Create
     [HttpPost]
-    [ValidateAntiForgeryToken]
-    public IActionResult Create(Incident incident)
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Create(Incident incident, IFormFile fileUpload)
+{
+    if (ModelState.IsValid)
     {
-        if (ModelState.IsValid)
+        // Get the User ID from claims
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (int.TryParse(userIdClaim, out int userId))
         {
-            // Ensure that DateReported is in UTC (or default to current UTC time if not set)
-            if (incident.DateReported == default(DateTime))
-            {
-                incident.DateReported = DateTime.UtcNow; // Set to UTC now if no date is provided
-            }
-            else
-            {
-                incident.DateReported = incident.DateReported.ToUniversalTime(); // Convert to UTC if needed
-            }
-
-            // Store the incident with UTC DateReported
-            _context.Incidents.Add(incident);
-            _context.SaveChanges();
-            return RedirectToAction(nameof(Index));
+            // Assign the user ID to the incident
+            incident.UserId = userId;
         }
-        return View(incident);
+        else
+        {
+            // If parsing fails, add an error to ModelState and return the view
+            ModelState.AddModelError("", "Unable to find a valid User ID.");
+            return View(incident);
+        }
+
+        // Set the DateReported to the current UTC date and time if not provided
+        if (incident.DateReported == default(DateTime))
+        {
+            incident.DateReported = DateTime.UtcNow;
+        }
+
+        // Check if there is a file to upload
+        if (fileUpload != null && fileUpload.Length > 0)
+        {
+            // Firebase storage configuration
+            var apiKey = _configuration["Firebase:ApiKey"];
+            var authEmail = _configuration["Firebase:AuthEmail"];
+            var authPassword = _configuration["Firebase:AuthPassword"];
+            var bucket = _configuration["Firebase:Bucket"];
+
+            // Authenticate to Firebase using email and password
+            var auth = new FirebaseAuthProvider(new FirebaseConfig(apiKey));
+            var firebaseAuth = await auth.SignInWithEmailAndPasswordAsync(authEmail, authPassword);
+
+            // Create a unique filename for the file to be uploaded
+            var stream = fileUpload.OpenReadStream();
+            var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(fileUpload.FileName)}";
+
+            // Upload the file to Firebase Storage
+            var task = new FirebaseStorage(
+                bucket,
+                new FirebaseStorageOptions
+                {
+                    AuthTokenAsyncFactory = () => Task.FromResult(firebaseAuth.FirebaseToken),
+                    ThrowOnCancel = true
+                })
+                .Child("uploads") // Define the folder name in your Firebase storage
+                .Child(fileName)
+                .PutAsync(stream);
+
+            try
+            {
+                // Get the download URL after the file is uploaded
+                incident.FileUrl = await task;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error uploading file: {ex.Message}");
+                ModelState.AddModelError("", "File upload failed. Please try again.");
+                return View(incident);
+            }
+        }
+
+        // Store the incident details in PostgreSQL
+        _context.Incidents.Add(incident);
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Index));
     }
+
+    return View(incident);
+}
 
     // GET: Incident/Delete/5
     public IActionResult Delete(int? incidentId)

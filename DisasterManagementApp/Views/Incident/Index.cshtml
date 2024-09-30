@@ -6,6 +6,7 @@
             <th>Title</th>
             <th>Description</th>
             <th>Date Reported</th>
+            <th>Image/Video</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -16,6 +17,17 @@
                 <td>@item.Title</td>
                 <td>@item.Description</td>
                 <td>@item.DateReported</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.FileUrl))
+                    {
+                        <!-- Display image or video thumbnail -->
+                        <img src="@item.FileUrl" alt="Incident Media" style="max-width: 100px; max-height: 100px;" />
+                    }
+                    else
+                    {
+                        <span>No media</span>
+                    }
+                </td>
                 <td>
                     <a asp-action="Edit" asp-route-incidentId="@item.IncidentId" class="btn btn-primary">Edit</a> |
                     <a asp-action="Delete" asp-route-incidentId="@item.IncidentId" class="btn btn-danger">Delete</a>

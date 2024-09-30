@@ -23,20 +23,26 @@ public class UserController : Controller
     }
 
     // POST: SignIn (Handles registration)
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public IActionResult SignIn(User user)
-    {
-        if (ModelState.IsValid)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult SignIn(User user)
         {
-            // Hash the password before storing
-            user.Password = HashPassword(user.Password);
-            _context.Users.Add(user);
-            _context.SaveChanges();
-            return RedirectToAction("Login"); // Redirect to login after registration
+            if (ModelState.IsValid)
+            {
+                // Hash the password before storing
+                user.Password = HashPassword(user.Password);
+
+                // Set the default RoleId to "user" role only if RoleId is not provided in the request
+                
+                user.RoleId = 1; // Default to "user"
+
+                // Save the user to the database (Username, Email, and Password)
+                _context.Users.Add(user);
+                _context.SaveChanges();
+                return RedirectToAction("Login"); // Redirect to login after registration
+            }
+            return View(user);
         }
-        return View(user);
-    }
 
     // GET: Login (Login Page)
     public IActionResult Login()
@@ -44,7 +50,8 @@ public class UserController : Controller
         return View();
     }
 
-    // POST: Login (Handles login authentication)
+        // POST: Login (Handles login authentication)[HttpPost]
+    
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(User user)
@@ -58,7 +65,8 @@ public class UserController : Controller
                 // Create claims for the user
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, dbUser.Username)
+                    new Claim(ClaimTypes.Name, dbUser.Username),
+                    new Claim(ClaimTypes.NameIdentifier, dbUser.UserId.ToString()) // Add UserId as a claim
                 };
 
                 // Create identity and principal
@@ -73,8 +81,21 @@ public class UserController : Controller
 
             ModelState.AddModelError("", "Invalid login attempt.");
         }
+        else
+        {
+            // Output any validation errors to help debug
+            foreach (var modelState in ModelState.Values)
+            {
+                foreach (var error in modelState.Errors)
+                {
+                    Console.WriteLine(error.ErrorMessage);
+                }
+            }
+        }
         return View(user);
     }
+
+
 
     // GET: Logout (Handles logout)
     public async Task<IActionResult> Logout()
