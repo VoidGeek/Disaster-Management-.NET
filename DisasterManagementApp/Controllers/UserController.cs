@@ -23,26 +23,42 @@ public class UserController : Controller
     }
 
     // POST: SignIn (Handles registration)
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult SignIn(User user)
+       [HttpPost]
+[ValidateAntiForgeryToken]
+public IActionResult SignIn(User user)
+{
+    if (ModelState.IsValid)
+    {
+        // Check if username is already taken
+        var isUsernameTaken = _context.Users.Any(u => u.Username == user.Username);
+        
+        if (isUsernameTaken)
         {
-            if (ModelState.IsValid)
-            {
-                // Hash the password before storing
-                user.Password = HashPassword(user.Password);
-
-                // Set the default RoleId to "user" role only if RoleId is not provided in the request
-                
-                user.RoleId = 1; // Default to "user"
-
-                // Save the user to the database (Username, Email, and Password)
-                _context.Users.Add(user);
-                _context.SaveChanges();
-                return RedirectToAction("Login"); // Redirect to login after registration
-            }
+            ModelState.AddModelError("Username", "Username is already taken. Please choose a different one.");
             return View(user);
         }
+
+        // Hash the password before storing
+        user.Password = HashPassword(user.Password);
+
+        // Set the default RoleId to "user" role only if RoleId is not provided in the request
+        user.RoleId = 1; // Default to "user"
+
+        // Save the user to the database (Username, Email, and Password)
+        _context.Users.Add(user);
+        _context.SaveChanges();
+        return RedirectToAction("Login"); // Redirect to login after registration
+    }
+    return View(user);
+}
+    [HttpGet]
+public JsonResult IsUsernameAvailable(string username)
+{
+    // Check if username is already taken
+    var isAvailable = !_context.Users.Any(u => u.Username == username);
+    
+    return Json(isAvailable);
+}
 
     // GET: Login (Login Page)
     public IActionResult Login()

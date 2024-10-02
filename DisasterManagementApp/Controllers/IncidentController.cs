@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Firebase.Auth;
 using Firebase.Storage;
+using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 
@@ -24,25 +26,45 @@ public class IncidentController : Controller
     }
 
     // GET: Incidents
-    public IActionResult Index()
+
+
+    public IActionResult Index(string searchTerm)
     {
         // Get the User ID from claims
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        // Ensure UserId is set and can be parsed as an int
         if (!string.IsNullOrEmpty(userIdClaim) && int.TryParse(userIdClaim, out int userId))
         {
-            // Retrieve only incidents for the logged-in user
-            var incidents = _context.Incidents
-                .Where(i => i.UserId == userId)
-                .ToList();
+            // Retrieve the user's role from the database based on their UserId
+            var roleId = _context.Users
+                .Where(u => u.UserId == userId)
+                .Select(u => u.RoleId)
+                .FirstOrDefault();
 
+            // Get the base query for incidents based on user role
+            IQueryable<Incident> query = roleId == 2
+                ? _context.Incidents
+                : _context.Incidents.Where(i => i.UserId == userId);
+
+            // Apply search if searchTerm is provided
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                // Use regular expression to match any part of the title (case-insensitive)
+                query = query.Where(i => Regex.IsMatch(i.Title, searchTerm, RegexOptions.IgnoreCase));
+            }
+
+            // Execute the query and return results to the view
+            var incidents = query.ToList();
+             // Pass the RoleId to the view using ViewBag or ViewData
+            ViewBag.RoleId = roleId;
             return View(incidents);
         }
 
-        // If UserId is not found or invalid, return an empty list or handle accordingly
         return View(new List<Incident>());
     }
+
+
+
 
 
     // GET: Incident/Create
@@ -163,4 +185,8 @@ public async Task<IActionResult> Create(Incident incident, IFormFile fileUpload)
 
         return RedirectToAction(nameof(Index));
     }
+
+    // GET: Incident/Edit/5
 }
+
+

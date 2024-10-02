@@ -1,21 +1,81 @@
 @model User
 
-<h2>Login</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - DisasterManagementApp</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        /* Set a fixed height for the login container */
+        .login-container {
+            min-height: 400px;
+        }
 
-<form asp-action="Login" method="post">
-    <div class="form-group">
-        <label asp-for="Username">Username</label>
-        <input type="text" class="form-control" asp-for="Username" />
-        <span asp-validation-for="Username" class="text-danger"></span>
-    </div>
+        /* Ensure all images are the same size */
+        .login-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        body {
+            background: linear-gradient(180deg, #c1d194, #dfe7cb);
+        }
+    </style>
+</head>
+<body>
+<div class="container my-5">
+    <div class="row login-container shadow rounded overflow-hidden">
+        <!-- Left Side: Image -->
+        <div class="col-md-6 p-0">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Kan%C5%8D_Sansetsu_-_Frolicking_Birds_in_Plum_and_Willow_Trees.jpg/800px-Kan%C5%8D_Sansetsu_-_Frolicking_Birds_in_Plum_and_Willow_Trees.jpg" alt="Login Image" class="login-image rounded-left">
+        </div>
 
-    <div class="form-group">
-        <label asp-for="Password">Password</label>
-        <input type="password" class="form-control" asp-for="Password" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
+        <!-- Right Side: Login Form -->
+        <div class="col-md-6 bg-white p-5 d-flex align-items-center">
+            <div class="w-100">
+                <h2 class="mb-4">Login</h2>
 
-    <div class="form-group">
-        <input type="submit" value="Login" class="btn btn-primary" />
+                <form asp-action="Login" method="post">
+                    <div class="form-group mb-3">
+                        <label asp-for="Username">Username</label>
+                        <input type="text" class="form-control" asp-for="Username" />
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Password">Password</label>
+                        <input type="password" class="form-control" asp-for="Password" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <input type="submit" value="Login" class="btn btn-primary w-100" />
+                    </div>
+
+                    <!-- Display error messages from ModelState -->
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <p>@error.ErrorMessage</p>
+                            }
+                        </div>
+                    }
+                </form>
+
+                <!-- New User? Sign Up link -->
+                <div class="text-center mt-4">
+                    <p>New User? <a asp-controller="User" asp-action="SignIn" class="text-primary">Sign Up</a></p>
+                </div>
+            </div>
+        </div>
     </div>
-</form>
+</div>
+
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

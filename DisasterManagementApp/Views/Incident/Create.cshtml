@@ -7,53 +7,142 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report New Incident</title>
 
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+
+    <!-- Custom CSS for enhanced styling -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content {
+            flex: 1; /* Push footer to bottom */
+            margin-bottom: 20px; /* Add some space between content and footer */
+        }
+
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            font-weight: bold;
+            color: #343a40;
+        }
+
+        #map {
+            border-radius: 8px;
+            height: 100%;
+        }
+
+        .form-container {
+            margin: 2rem auto;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        label {
+            font-weight: bold;
+            color: #495057;
+        }
+
+        footer {
+            text-align: center;
+            padding: 10px 0;
+        }
+        body {
+            background: linear-gradient(180deg, #dee1d4, #dfe7cb);
+        }
+    </style>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 </head>
 <body>
 
-    <h2>Report New Incident</h2>
+    <div class="content">
+        <div class="container">
+            <!-- Bootstrap Row for Two-Column Layout -->
+            <div class="row">
+                
+                <!-- Map on the Left -->
+                <div class="col-md-6 mb-4 d-flex align-items-stretch">
+                    <div id="map" class="w-100" style="min-height: 450px;"></div>
+                </div>
 
-    <form asp-action="Create" method="post" enctype="multipart/form-data">
-        <div class="form-group">
-            <label>Title</label>
-            <input type="text" class="form-control" asp-for="Title" />
+                <!-- Form on the Right -->
+                <div class="col-md-6">
+                    <div class="form-container">
+                        <div class="card p-4 h-100">
+                            <h2 class="mb-4">Report New Incident</h2>
+
+                            <form asp-action="Create" method="post" enctype="multipart/form-data">
+                                <!-- Title Input -->
+                                <div class="form-group mb-4">
+                                    <label for="title">Title</label>
+                                    <input type="text" class="form-control" id="title" asp-for="Title" placeholder="Enter title of the incident" />
+                                </div>
+
+                                <!-- Description Textarea -->
+                                <div class="form-group mb-4">
+                                    <label for="description">Description</label>
+                                    <textarea class="form-control" id="description" asp-for="Description" rows="4" placeholder="Describe the incident in detail"></textarea>
+                                </div>
+
+                                <!-- Latitude and Longitude Inputs -->
+                                <div class="form-group mb-4">
+                                    <label for="latitude">Latitude</label>
+                                    <input type="text" class="form-control" id="latitude" asp-for="Latitude" readonly />
+                                </div>
+
+                                <div class="form-group mb-4">
+                                    <label for="longitude">Longitude</label>
+                                    <input type="text" class="form-control" id="longitude" asp-for="Longitude" readonly />
+                                </div>
+
+                                <!-- File Upload for Image or Video -->
+                                <div class="form-group mb-4">
+                                    <label for="fileUpload">Upload Image or Video</label>
+                                    <input type="file" class="form-control-file" id="fileUpload" name="fileUpload" accept="image/*,video/*" />
+                                </div>
+
+                                <!-- Submit Button -->
+                                <div class="text-center">
+                                    <input type="submit" value="Report Incident" class="btn btn-primary" />
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
         </div>
-
-        <div class="form-group">
-            <label>Description</label>
-            <textarea class="form-control" asp-for="Description"></textarea>
-        </div>
-
-        <!-- Map Container -->
-        <div id="map" style="height: 400px;"></div>
-
-        <div class="form-group">
-            <label>Latitude</label>
-            <input type="text" class="form-control" id="latitude" asp-for="Latitude" readonly />
-        </div>
-
-        <div class="form-group">
-            <label>Longitude</label>
-            <input type="text" class="form-control" id="longitude" asp-for="Longitude" readonly />
-        </div>
-
-        <!-- File Upload for Image or Video -->
-        <div class="form-group">
-            <label for="fileUpload">Upload Image or Video</label>
-            <input type="file" class="form-control" id="fileUpload" name="fileUpload" accept="image/*,video/*" />
-        </div>
-
-        <div class="form-group">
-            <input type="submit" value="Report" class="btn btn-primary" />
-        </div>
-    </form>
+    </div>
 
     <!-- Include the script from the partial view (_MapScript.cshtml) -->
     <partial name="_MapScript" />
 
+    <!-- Bootstrap JS (Optional) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

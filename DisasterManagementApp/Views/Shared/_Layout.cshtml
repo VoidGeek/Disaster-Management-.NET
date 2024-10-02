@@ -7,10 +7,22 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/DisasterManagementApp.styles.css" asp-append-version="true" />
+    <!-- Add Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" />
+    <style>
+        /* Apply glassmorphism effect to the navbar */
+        .navbar-glass {
+            background: rgba(255, 255, 255, 0.5); /* Semi-transparent background */
+            backdrop-filter: blur(10px); /* Blur effect */
+            -webkit-backdrop-filter: blur(10px); /* Safari support */
+            border: 1px solid rgba(255, 255, 255, 0.18); /* Light border */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional shadow */
+        }
+    </style>
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light border-bottom box-shadow mb-3 navbar-glass">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">DisasterManagementApp</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
@@ -27,7 +39,10 @@
                         </li>
                         <!-- New Reported Incidents link -->
                         <li class="nav-item">
-                            <a class="nav-link text-dark" href="http://localhost:5171/Incident/Index">Reported Incidents</a>
+                            @if (User.Identity != null && User.Identity.IsAuthenticated)
+                            {
+                                <a class="nav-link text-dark" href="http://localhost:5171/Incident/Index">Reported Incidents</a>
+                            }
                         </li>
                     </ul>
                     
@@ -35,6 +50,21 @@
                     <ul class="navbar-nav">
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
+                            <li class="nav-item dropdown">
+                                <!-- Notification Icon with Dropdown -->
+                                <a class="nav-link position-relative dropdown-toggle" href="#" id="notification-icon" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-bell"></i>
+                                    <!-- Optional badge for notification count -->
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-count">
+                                        0 <!-- Default notification count -->
+                                        <span class="visually-hidden">unread messages</span>
+                                    </span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notification-icon" id="notification-list">
+                                    <!-- Alerts will be dynamically inserted here -->
+                                    <li class="dropdown-item text-center">Loading...</li>
+                                </ul>
+                            </li>
                             <li class="nav-item">
                                 <span class="nav-link text-dark">Welcome, @User.Identity.Name!</span>
                             </li>
@@ -72,5 +102,83 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    <!-- Script for fetching and displaying alerts in the notification dropdown -->
+    <script>
+    // Function to update notification count
+    function updateNotificationCount() {
+        // Fetch alerts
+        fetch('/Alert/GetRecentAlerts')
+            .then(response => response.json())
+            .then(alerts => {
+                // Update notification count
+                document.getElementById('notification-count').textContent = alerts.length;
+            })
+            .catch(error => {
+                console.error('Error fetching alerts:', error);
+            });
+    }
+
+    // Function to load alerts when the notification icon is clicked
+    document.getElementById('notification-icon').addEventListener('click', function() {
+        // Clear existing notifications
+        const notificationList = document.getElementById('notification-list');
+        notificationList.innerHTML = '<li class="dropdown-item text-center">Loading...</li>';
+        
+        // Fetch alerts
+        fetch('/Alert/GetRecentAlerts')
+            .then(response => response.json())
+            .then(alerts => {
+                // Clear loading message
+                notificationList.innerHTML = '';
+
+                // Check if there are alerts
+                if (alerts.length > 0) {
+                    alerts.forEach(alert => {
+                        // Format the date
+                        const formattedDate = new Date(alert.alertDate).toLocaleString('en-US', {
+                            month: 'short', day: 'numeric', year: 'numeric',
+                            hour: '2-digit', minute: '2-digit'
+                        });
+                        
+                        // Clean the message (remove 'a.' if present)
+                        const cleanMessage = alert.message.replace(/^a\./, '') || 'No message available';
+
+                        // Add each alert message to the dropdown with professional formatting
+                        const alertItem = document.createElement('li');
+                        alertItem.classList.add('dropdown-item', 'p-2', 'border-bottom');
+                        alertItem.innerHTML = `
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${formattedDate}</strong>
+                                    <div>${cleanMessage}</div>
+                                </div>
+                                <i class="bi bi-info-circle text-primary"></i> <!-- Optional icon -->
+                            </div>
+                        `;
+                        notificationList.appendChild(alertItem);
+                    });
+                } else {
+                    // If no alerts, show a message
+                    const noAlertsItem = document.createElement('li');
+                    noAlertsItem.classList.add('dropdown-item', 'text-center');
+                    noAlertsItem.textContent = 'No alerts';
+                    notificationList.appendChild(noAlertsItem);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching alerts:', error);
+                // Display an error message
+                notificationList.innerHTML = '<li class="dropdown-item text-center text-danger">Failed to load alerts</li>';
+            });
+    });
+
+    // Call updateNotificationCount once initially to set the count
+    updateNotificationCount();
+
+    // Set an interval to update notification count every 60 seconds (60000 ms)
+    setInterval(updateNotificationCount, 60000);
+    </script>
+
 </body>
 </html>

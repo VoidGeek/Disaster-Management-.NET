@@ -1,0 +1,39 @@
+@model Alert
+@{
+    Layout = "_Layout";
+}
+@{
+    ViewData["Title"] = "Create Alert";
+}
+
+<h2>Create Alert</h2>
+
+<!-- Form for creating a new alert -->
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    
+    <div class="form-group mb-4">
+        <label asp-for="Message">Message</label>
+        <textarea class="form-control" asp-for="Message" placeholder="Enter the message of the alert" rows="3"></textarea>
+        <span asp-validation-for="Message" class="text-danger"></span>
+    </div>
+
+    <!-- Use a hidden field for IncidentId -->
+    <input type="hidden" asp-for="IncidentId" />
+
+    <!-- Set AlertDate as UTC using JavaScript (client-side) -->
+    <input type="hidden" asp-for="AlertDate" id="alertDate" />
+
+    <button type="submit" class="btn btn-primary">Create Alert</button>
+</form>
+
+@section Scripts {
+    <!-- Add validation script for client-side validation -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.3/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.11/dist/jquery.validate.unobtrusive.min.js"></script>
+
+    <!-- Set the AlertDate to the current date and time in UTC -->
+    <script>
+        document.getElementById('alertDate').value = new Date().toISOString();
+    </script>
+}

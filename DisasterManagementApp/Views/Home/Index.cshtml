@@ -1,11 +1,70 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+@{
+    Layout = "_Layout";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - DisasterManagementApp</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        /* Ensure all feature images are the same size */
+        .feature-image {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+        }
+        /* Set background color for the entire page */
+        body {
+            background: linear-gradient(180deg, #62d7f5, #ffffff);
+        }
+        /* Set a transparent background for the hero section */
+        .hero-section {
+            background-color: rgba(255, 255, 255, 0.8); /* white background with 80% opacity */
+        }
+    </style>
+</head>
+<body>
+<div class="container my-5">
+    <!-- Hero Section -->
+    <section class="text-center hero-section p-5 rounded mb-5 shadow-sm">
+        <h1 class="display-4 text-primary mb-4">Welcome to Disaster Management App</h1>
+        <p class="lead text-secondary mb-4">Your solution for efficiently managing and reporting incidents in your community.</p>
+        <a href="https://learn.microsoft.com/aspnet/core" class="btn btn-primary btn-lg">Learn ASP.NET Core</a>
+    </section>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <!-- Feature Section with Images -->
+    <section class="row text-center">
+        <div class="col-md-4 mb-4">
+            <img src="https://www.sine.co/wp-content/uploads/2022/02/Blog-Importance-of-effective-Incident-Reports.jpg" alt="Report Incidents" class="rounded-circle mb-3 img-fluid shadow-sm feature-image" />
+            <h3 class="h5">Report Incidents Easily</h3>
+            <p>Report any disaster or incident with ease, providing vital information quickly.</p>
+        </div>
+        <div class="col-md-4 mb-4">
+            <img src="https://devcycle.com/_next/static/media/test-deploy.a17fef7f.png" alt="Real-Time Updates" class="rounded-circle mb-3 img-fluid shadow-sm feature-image" />
+            <h3 class="h5">Real-Time Updates</h3>
+            <p>Stay informed with live updates and alerts as incidents unfold.</p>
+        </div>
+        <div class="col-md-4 mb-4">
+            <img src="https://cdn.prod.website-files.com/652427f5a7e6506f73697244/65c147a8461d5c1213ba487c_5b44b2bd875a69e338db700b_blog_post_hero-status-reports%25402x.png" alt="Manage Reports" class="rounded-circle mb-3 img-fluid shadow-sm feature-image" />
+            <h3 class="h5">Manage All Reports</h3>
+            <p>Efficiently manage and respond to reports from a centralized dashboard.</p>
+        </div>
+    </section>
 
-    <!-- Add a link to the Create page of the Incident controller -->
-    <p>Go to <a asp-controller="Incident" asp-action="Create">Create Incident</a> page.</p>
+    <!-- Call to Action for Creating Incidents -->
+    <section class="text-center mt-5">
+        <h2 class="h4 text-secondary mb-4">Ready to Report an Incident?</h2>
+        <p class="mb-4">Help responders by providing accurate and timely information about any incidents.</p>
+        <a asp-controller="Incident" asp-action="Create" class="btn btn-success btn-lg">Create Incident</a>
+    </section>
 </div>
+
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
